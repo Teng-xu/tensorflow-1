@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
-#include "tensorflow/core/kernels/mlir_generated/gpu_ops_base.h"
+#include "tensorflow/compiler/xla/side_effect_util.h"
 
-namespace tensorflow {
+namespace xla {
 
-GENERATE_AND_REGISTER_UNARY_KERNEL(Asinh, f32, DT_FLOAT, float);
-GENERATE_AND_REGISTER_UNARY_KERNEL(Asinh, f64, DT_DOUBLE, double);
+const char kXlaHostTransferRendezvousNameAttr[] =
+    "_xla_host_transfer_rendezvous";
 
-}  // namespace tensorflow
+const char kXlaHostTransferOriginalTypeAttr[] =
+    "_xla_host_transfer_original_type";
+
+const char kXlaHostTransferIsLowerBitsAttr[] =
+    "_xla_host_transfer_is_lower_bits";
+
+}  // namespace xla
