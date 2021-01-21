@@ -1,0 +1,21 @@
+name: Merge upstream branches
+on:
+  schedule:
+     # actually, ~5 minutes is the highest
+     # effective frequency you will get
+    - cron:  '0 0 * * *'
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Merge upstream
+        run: |
+          git config --global user.name 'Teng-xu'
+          git config --global user.email 'xuteng@amazon.com'
+          git checkout r2.4
+          git pull --unshallow
+          git remote add upstream https://github.com/tensorflow/tensorflow.git
+          git fetch upstream
+          git merge --no-edit upstream/r2.4
+          git push
