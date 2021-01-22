@@ -19,3 +19,11 @@ jobs:
           git fetch upstream
           git merge --no-edit upstream/r2.4
           git push
+      - name: Invoke tf-git-auto-sync Lambda
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          REGION: us-west-2
+          FunctionName: tf-git-auto-sync
+          Payload: '{ "tf_version": "2.4" }'
