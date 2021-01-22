@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Merge upstream
+        with:
+          ref: r2.4
+      - name: Merge upstream 2.4
         run: |
           git config --global user.name 'Teng-xu'
           git config --global user.email 'xuteng@amazon.com'
