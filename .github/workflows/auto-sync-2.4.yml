@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: r2.4
+          fetch-depth: 0
       - name: Merge upstream 2.4
         run: |
           git config --global user.name 'Teng-xu'
