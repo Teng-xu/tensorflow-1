@@ -22,6 +22,7 @@ jobs:
           git merge --no-edit upstream/r2.4
           git push
       - name: Invoke tf-git-auto-sync Lambda
+        id: lambda_sync
         uses: gagoar/invoke-aws-lambda@master
         with:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -29,3 +30,5 @@ jobs:
           REGION: us-west-2
           FunctionName: tf-git-auto-sync
           Payload: '{ "tf_version": "2.4" }'
+      - name: Store tail logs to file
+        run: echo "${{ fromJSON(steps.lambda_sync.outputs.response).LogResult }}" > invocation-logs.js
