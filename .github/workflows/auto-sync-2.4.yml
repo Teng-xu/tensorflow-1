@@ -29,6 +29,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           REGION: us-west-2
           FunctionName: tf-git-auto-sync
+          LogType: Tail
           Payload: '{ "tf_version": "2.4" }'
       - name: Store tail logs to file
         run: echo "${{ fromJSON(steps.lambda_sync.outputs.response).LogResult }}" > invocation-logs.js
