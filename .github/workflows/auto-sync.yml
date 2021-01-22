@@ -1,4 +1,4 @@
-name: Merge upstream branches
+name: Merge upstream branch master
 on:
   schedule:
      # actually, ~5 minutes is the highest
