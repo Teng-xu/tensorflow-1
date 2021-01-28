@@ -604,7 +604,7 @@ StatusOr<std::unique_ptr<PjRtBuffer>>
 PjRtStreamExecutorClient::BufferFromHostBuffer(
     const void* data, const Shape& shape,
     HostBufferSemantics host_buffer_semantics,
-    std::shared_ptr<void> buffer_reference, PjRtDevice* device) {
+    std::function<void()> on_done_with_host_buffer, PjRtDevice* device) {
   tensorflow::profiler::TraceMe traceme(
       "PjRtStreamExecutorClient::BufferFromHostBuffer");
   VLOG(2) << "PjRtStreamExecutorClient::BufferFromHostBuffer: shape: "
@@ -647,19 +647,20 @@ PjRtStreamExecutorClient::BufferFromHostBuffer(
       // further copies. At the time of writing we require a 16-byte alignment
       // because XLA may generate code which requires it.
       if (can_use_zero_copy) {
-        on_delete_callback = [buffer_reference{std::move(buffer_reference)}]() {
-          // Frees buffer_reference.
-        };
+        on_delete_callback = std::move(on_done_with_host_buffer);
         buffer = se::DeviceMemoryBase(const_cast<void*>(data), size);
       } else {
         void* staging_buffer = host_memory_allocator()->AllocateRaw(
             cpu_function_runtime::kMinAlign, size);
+        buffer = se::DeviceMemoryBase(staging_buffer, size);
+        std::memcpy(staging_buffer, data, size);
+        if (on_done_with_host_buffer) {
+          on_done_with_host_buffer();
+        }
         on_delete_callback = [staging_buffer, host_memory_allocator =
                                                   host_memory_allocator()]() {
           host_memory_allocator->DeallocateRaw(staging_buffer);
         };
-        buffer = se::DeviceMemoryBase(staging_buffer, size);
-        std::memcpy(staging_buffer, data, size);
       }
       absl::Span<const std::shared_ptr<BufferSequencingEvent>>
           definition_events;
@@ -702,7 +703,10 @@ PjRtStreamExecutorClient::BufferFromHostBuffer(
   // thread.
   if (host_buffer_semantics == HostBufferSemantics::kImmutableOnlyDuringCall) {
     std::memcpy(staging_buffer.get(), data, size);
-    buffer_reference.reset();
+    if (on_done_with_host_buffer) {
+      on_done_with_host_buffer();
+      on_done_with_host_buffer = nullptr;
+    }
     data = nullptr;
   }
 
@@ -718,7 +722,8 @@ PjRtStreamExecutorClient::BufferFromHostBuffer(
                        py_buffer{py_buffer.get()}, compact_shape,
                        on_device_shape{py_buffer->on_device_shape()},
                        staging_buffer{std::move(staging_buffer)},
-                       buffer_reference{std::move(buffer_reference)},
+                       on_done_with_host_buffer{
+                           std::move(on_done_with_host_buffer)},
                        host_buffer_semantics]() {
     PjRtStreamExecutorBuffer::ScopedHold device_buffer(movable_device_buffer);
     // This function uses TF_CHECK_OK and ValueOrDie() since we have no way
@@ -756,9 +761,16 @@ PjRtStreamExecutorClient::BufferFromHostBuffer(
         local_device, std::move(device_buffer), event,
         local_device->host_to_device_stream()));
 
-    local_device->ThenRelease(
-        local_device->host_to_device_stream(),
-        std::make_pair(std::move(buffer_reference), std::move(staging_buffer)));
+    local_device->callback_stream()->ThenWaitFor(
+        local_device->host_to_device_stream());
+    local_device->ThenExecuteOnCallbackThread(
+        local_device->callback_stream(),
+        [staging_buffer{std::move(staging_buffer)},
+         on_done_with_host_buffer{std::move(on_done_with_host_buffer)}]() {
+          if (on_done_with_host_buffer) {
+            on_done_with_host_buffer();
+          }
+        });
   };
   if (is_cpu_platform) {
     // Using the thread_pool would be a double thread hop; the code
@@ -899,6 +911,20 @@ void PjRtStreamExecutorClient::MakeCrossHostReceiveBuffers(
 
   EnqueueCrossHostReceive(std::move(buffers), std::move(definition_event),
                           std::move(notifier));
+}
+
+StatusOr<std::unique_ptr<PjRtBuffer>>
+PjRtStreamExecutorClient::CreateViewOfDeviceBuffer(
+    void* device_ptr, const Shape& shape, PjRtDevice* device,
+    std::function<void()> on_delete_callback) {
+  se::DeviceMemoryBase buffer(device_ptr, ShapeUtil::ByteSizeOf(shape));
+  absl::Span<const std::shared_ptr<BufferSequencingEvent>> definition_events;
+  auto device_buffer = std::make_shared<TrackedDeviceBuffer>(
+      /*allocator=*/nullptr, device->local_hardware_id(),
+      std::initializer_list<se::DeviceMemoryBase>{buffer}, definition_events,
+      std::move(on_delete_callback));
+  return std::unique_ptr<PjRtBuffer>(std::make_unique<PjRtStreamExecutorBuffer>(
+      shape, shape, std::move(device_buffer), this, device));
 }
 
 // Transfer the given literal to the infeed queue of the given local device.
@@ -1306,7 +1332,7 @@ StatusOr<std::unique_ptr<PjRtBuffer>> PjRtStreamExecutorBuffer::CopyToDevice(
     return dst_device->client()->BufferFromHostBuffer(
         literal_pointer->untyped_data(), literal_pointer->shape(),
         PjRtStreamExecutorClient::HostBufferSemantics::kZeroCopy,
-        std::move(literal), dst_device);
+        [literal{std::move(literal)}]() { /* frees literal */ }, dst_device);
   }
 
   TF_ASSIGN_OR_RETURN(
