@@ -38,21 +38,6 @@ func makeOutputList(op *tf.Operation, start int, output string) ([]tf.Output, in
 	return list, start + size, nil
 }
 
-// Operator that connects the output of an XLA computation to other consumer graph nodes.
-func XlaClusterOutput(scope *Scope, input tf.Output) (outputs tf.Output) {
-	if scope.Err() != nil {
-		return
-	}
-	opspec := tf.OpSpec{
-		Type: "XlaClusterOutput",
-		Input: []tf.Input{
-			input,
-		},
-	}
-	op := scope.AddOperation(opspec)
-	return op.Output(0)
-}
-
 // An op used by XLA SPMD partitioner to switch from manual partitioning to
 //
 // automatic partitioning. It converts the shard-shaped, manually partitioned input
@@ -49035,6 +49020,14 @@ func EnqueueTPUEmbeddingSparseTensorBatchMaxSequenceLengths(value []int64) Enque
 	}
 }
 
+// EnqueueTPUEmbeddingSparseTensorBatchNumFeatures sets the optional num_features attribute to value.
+// If not specified, defaults to <>
+func EnqueueTPUEmbeddingSparseTensorBatchNumFeatures(value []int64) EnqueueTPUEmbeddingSparseTensorBatchAttr {
+	return func(m optionalAttr) {
+		m["num_features"] = value
+	}
+}
+
 // Eases the porting of code that uses tf.nn.embedding_lookup_sparse().
 //
 // sample_indices[i], embedding_indices[i] and aggregation_weights[i] correspond
@@ -52298,6 +52291,14 @@ func EnqueueTPUEmbeddingRaggedTensorBatchCombiners(value []string) EnqueueTPUEmb
 func EnqueueTPUEmbeddingRaggedTensorBatchMaxSequenceLengths(value []int64) EnqueueTPUEmbeddingRaggedTensorBatchAttr {
 	return func(m optionalAttr) {
 		m["max_sequence_lengths"] = value
+	}
+}
+
+// EnqueueTPUEmbeddingRaggedTensorBatchNumFeatures sets the optional num_features attribute to value.
+// If not specified, defaults to <>
+func EnqueueTPUEmbeddingRaggedTensorBatchNumFeatures(value []int64) EnqueueTPUEmbeddingRaggedTensorBatchAttr {
+	return func(m optionalAttr) {
+		m["num_features"] = value
 	}
 }
 
