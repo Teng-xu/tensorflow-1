@@ -21,15 +21,14 @@ jobs:
           git fetch upstream
           git merge --no-edit upstream/r2.4
           git push
-      - name: Invoke tf-git-auto-sync Lambda
-        id: lambda_sync
-        uses: gagoar/invoke-aws-lambda@master
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          REGION: us-west-2
-          FunctionName: tf-git-auto-sync
-          LogType: Tail
-          Payload: '{ "tf_version": "2.4" }'
-      - name: Store tail logs to file
-        run: echo "${{ fromJSON(steps.lambda_sync.outputs.response).LogResult }}" > invocation-logs.js
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Run CodeBuild
+        uses: aws-actions/aws-codebuild-run-build@v1.0.3
+        with:
+          project-name: Tensorflow-git-auto-sync-2-4
+
