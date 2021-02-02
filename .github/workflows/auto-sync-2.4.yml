@@ -35,4 +35,8 @@ jobs:
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync-2-4
+          env-vars-for-codebuild: |
+            TF_VERSION
+        env:
+          TF_VERSION: 2.4
 
