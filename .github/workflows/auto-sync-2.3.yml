@@ -1,4 +1,4 @@
-name: Merge upstream branch 2.4
+name: Merge upstream branch 2.3
 on:
   schedule:
     - cron:  '0 8 * * *'
@@ -8,16 +8,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: r2.4
-      - name: Merge upstream 2.4
+          ref: r2.3
+      - name: Merge upstream 2.3
         run: |
           git config --global user.name 'Teng-xu'
           git config --global user.email 'xuteng@amazon.com'
-          git checkout r2.4
+          git checkout r2.3
           git pull --unshallow
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
-          git merge --no-edit upstream/r2.4
+          git merge --no-edit upstream/r2.3
           git push
       - name: Check if there are changes
         id: changes
@@ -39,5 +39,5 @@ jobs:
           env-vars-for-codebuild: |
             TF_VERSION
         env:
-          TF_VERSION: 2.4
+          TF_VERSION: 2.3
 
