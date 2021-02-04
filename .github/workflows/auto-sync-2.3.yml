@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.3
 on:
   schedule:
-    - cron:  '0 8 * * *'
+    - cron:  '0 12 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
         id: changes
         uses: UnicornGlobal/has-changes-action@v1.0.11
       - name: Checkout master branch
-        run: git checkout master
+        run: git checkout --track origin/master
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
