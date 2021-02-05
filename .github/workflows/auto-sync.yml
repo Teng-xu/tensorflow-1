@@ -1,13 +1,13 @@
 name: Merge upstream branch master
 on:
   schedule:
-    - cron:  '* 20 * * *'
+    - cron:  '* 16 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Fetch upstream
+      - name: Merge upstream
         run: |
           git config --global user.name 'Teng-xu'
           git config --global user.email 'xuteng@amazon.com'
@@ -34,7 +34,7 @@ jobs:
           env-vars-for-codebuild: |
             TF_VERSION
         env:
-          TF_VERSION: master
+          TF_VERSION: 2.4
       - name: Push to upstream
         run: |
           git push

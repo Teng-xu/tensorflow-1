@@ -18,20 +18,19 @@ jobs:
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
           git merge --no-edit upstream/r2.4
-          git push
-      - name: Check if there are changes
-        id: changes
-        uses: UnicornGlobal/has-changes-action@v1.0.11
-      - name: Checkout master branch
-        run: git checkout --track origin/master
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+      - name: Check Git Status
+        run: echo "::set-output name=status::$(git status)"
+        id: git-status
+      - name: Checkout master branch
+        run: git checkout --track origin/master
       - name: Run CodeBuild
-        if: steps.changes.outputs.changed == 1
+        if: "!contains(${{ steps.git-status.outputs.status }}, 'up to date')"
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync
@@ -39,5 +38,8 @@ jobs:
           env-vars-for-codebuild: |
             TF_VERSION
         env:
-          TF_VERSION: 2.4
-
+          TF_VERSION: master
+      - name: Push to upstream
+        run: |
+          git checkout r2.4
+          git push

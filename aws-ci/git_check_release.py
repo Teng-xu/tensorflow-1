@@ -18,6 +18,8 @@ def main():
     else:
         tf_branch = f"r{tf_version}_aws"
         git_branch = f"r{tf_version}"
+    os.system('git config --global user.name "AWS TF BOT"')
+    os.system('git config --global user.email aws-tensorflow-bot@amazon.com')
     os.system('git clone codecommit::us-west-2://aws-tensorflow')
     os.chdir('aws-tensorflow/')
     os.system(f'git checkout {tf_branch}')
