@@ -1,13 +1,13 @@
 name: Merge upstream branch master
 on:
   schedule:
-    - cron:  '0 18 * * *'
+    - cron:  '0 18 20 * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Merge upstream
+      - name: Fetch upstream
         run: |
           git config --global user.name 'Teng-xu'
           git config --global user.email 'xuteng@amazon.com'
@@ -15,7 +15,6 @@ jobs:
           git pull --unshallow
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
-          git merge --no-edit upstream/master
 
       - name: Check if there are changes
         id: changes
@@ -27,9 +26,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
       - name: Run CodeBuild
-        if: steps.changes.outputs.changed == 0
-        run: echo 'No Changes'
-      - name: Run CodeBuild
         if: steps.changes.outputs.changed == 1
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
@@ -39,3 +35,7 @@ jobs:
             TF_VERSION
         env:
           TF_VERSION: master
+      - name: Merge upstream
+        run: |
+          git merge --no-edit upstream/master
+          git push
