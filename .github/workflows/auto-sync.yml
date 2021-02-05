@@ -30,7 +30,7 @@ jobs:
         if: steps.changes.outputs.changed == 1
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
-          project-name: Tensorflow-git-auto-sync-2-4
+          project-name: Tensorflow-git-auto-sync
           buildspec-override: aws-ci/git-sync.yml
           env-vars-for-codebuild: |
             TF_VERSION
