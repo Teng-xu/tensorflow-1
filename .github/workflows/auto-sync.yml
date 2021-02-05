@@ -1,9 +1,7 @@
 name: Merge upstream branch master
 on:
   schedule:
-     # actually, ~5 minutes is the highest
-     # effective frequency you will get
-    - cron:  '0 8 * * *'
+    - cron:  '0 16 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -13,10 +11,28 @@ jobs:
         run: |
           git config --global user.name 'Teng-xu'
           git config --global user.email 'xuteng@amazon.com'
-
           git checkout master
           git pull --unshallow
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
           git merge --no-edit upstream/master
           git push
+      - name: Check if there are changes
+        id: changes
+        uses: UnicornGlobal/has-changes-action@v1.0.11
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Run CodeBuild
+        if: steps.changes.outputs.changed == 1
+        uses: aws-actions/aws-codebuild-run-build@v1.0.3
+        with:
+          project-name: Tensorflow-git-auto-sync-2-4
+          buildspec-override: aws-ci/git-sync.yml
+          env-vars-for-codebuild: |
+            TF_VERSION
+        env:
+          TF_VERSION: master
