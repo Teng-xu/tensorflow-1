@@ -38,7 +38,7 @@ jobs:
           env-vars-for-codebuild: |
             TF_VERSION
         env:
-          TF_VERSION: master
+          TF_VERSION: 2.4
       - name: Push to upstream
         run: |
           git checkout r2.4
