@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.4
 on:
   schedule:
-    - cron:  '0 21 * * *'
+    - cron:  '0 22 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
