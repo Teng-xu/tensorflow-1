@@ -23,7 +23,7 @@ def main():
     os.system('git clone codecommit::us-west-2://aws-tensorflow')
     os.chdir('aws-tensorflow/')
     os.system(f'git checkout {tf_branch}')
-    os.system(f'git checkout -b {tf_branch}_git')
+    os.system(f'git checkout -b {tf_branch}_git_sync')
     os.system('git remote add google https://github.com/tensorflow/tensorflow.git')
     print('git', 'pull', '--commit', 'google', git_branch)
     output = subprocess.run(['git', 'pull', '--commit', 'google', git_branch], stdout=subprocess.PIPE).stdout.decode('utf-8')
@@ -32,9 +32,9 @@ def main():
     if ("Already up to date" in output):
         print('Branch already up to date.')
     else:
-        os.system(f'git push --set-upstream origin {tf_branch}_git')
+        os.system(f'git push --set-upstream origin {tf_branch}_git_sync')
         os.system('aws codecommit create-pull-request --title "TF{tf_version} git sync" --description "Sync tf {tf_version} with vanilla tf branch" '
-                  '--client-request-token request_token --targets repositoryName=aws-tensorflow,sourceReference={tf_branch}_git,destinationReference={tf_branch}'
+                  '--client-request-token request_token --targets repositoryName=aws-tensorflow,sourceReference={tf_branch}_git_sync,destinationReference={tf_branch}'
                   .format(tf_version=tf_version, tf_branch=tf_branch))
 
 
