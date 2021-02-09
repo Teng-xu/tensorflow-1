@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.4
 on:
   schedule:
-    - cron:  '0 22 * * *'
+    - cron:  '0 23 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -27,8 +27,8 @@ jobs:
       - name: Get Git Status
         run: |
           echo "::set-output name=status::$(git status)"
-          s="${git status}"
           echo "status: ${status}"
+          s=`git status`
           s="${s//'%'/'%25'}"
           s="${s//$'\n'/'%0A'}"
           s="${s//$'\r'/'%0D'}"
