@@ -22,11 +22,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-      - name: Check Git Status
+      - name: Get Git Status
         run: echo "::set-output name=status::$(git status)"
         id: git-status
+      - name: Check Git Status
+        run: | 
+          STATUS = "${{ steps.git-status.outputs.status }}"
+          STATUS="${STATUS//'%'/'%25'}"
+          STATUS="${STATUS//$'\n'/'%0A'}"
+          STATUS="${STATUS//$'\r'/'%0D'}"
+          echo "::set-output name=status::$STATUS"
+        id: status-log
       - name: Run CodeBuild
-        if: "!contains(${{ steps.git-status.outputs.status }}, 'up to date')"
+        if: "!contains(${{ steps.status-log.outputs.status }}, 'up to date')"
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync
