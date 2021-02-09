@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.4
 on:
   schedule:
-    - cron:  '0 8 * * *'
+    - cron:  '0 21 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -25,13 +25,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
       - name: Get Git Status
-        run: echo "::set-output name=status::$(git status)"
+        run: |
+          echo "::set-output name=status::$(git status)"
+          echo "${status}"
         id: git-status
       - name: Checkout master branch
         run: git checkout --track origin/master
       - name: Check Git Status
         run: |
-          STATUS = "${{ steps.git-status.outputs.status }}"
+          STATUS="${{ steps.git-status.outputs.status }}"
           STATUS="${STATUS//'%'/'%25'}"
           STATUS="${STATUS//$'\n'/'%0A'}"
           STATUS="${STATUS//$'\r'/'%0D'}"
