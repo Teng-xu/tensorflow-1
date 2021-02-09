@@ -27,7 +27,12 @@ jobs:
       - name: Get Git Status
         run: |
           echo "::set-output name=status::$(git status)"
+          s="${git status}"
           echo "status: ${status}"
+          s="${s//'%'/'%25'}"
+          s="${s//$'\n'/'%0A'}"
+          s="${s//$'\r'/'%0D'}"
+          echo "s: ${s}"
         id: git-status
       - name: Checkout master branch
         run: git checkout --track origin/master
