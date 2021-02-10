@@ -36,9 +36,7 @@ jobs:
             echo "Branch has new commits, proceeding to run CodeBuild project."
           fi
       - name: Checkout master branch
-        run: |
-          git checkout --track origin/master
-          echo contains("${{ steps.git-status.outputs.processed_status }}", 'up to date')"
+        run: git checkout --track origin/master
       - name: Run CodeBuild
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
