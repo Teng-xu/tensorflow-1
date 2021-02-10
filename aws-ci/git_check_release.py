@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+from datetime import datetime
 
 parser = argparse.ArgumentParser(
     description='Git TF Release Update',
@@ -32,10 +33,12 @@ def main():
     if ("Already up to date" in output):
         print('Branch already up to date.')
     else:
+        dateTime = datetime.now()
+        timestampStr = dateTime.strftime("%d%b%Y_%H%M%S")
         os.system(f'git push --set-upstream origin {tf_branch}_git_sync')
         os.system('aws codecommit create-pull-request --title "TF{tf_version} git sync" --description "Sync tf {tf_version} with vanilla tf branch" '
-                  '--client-request-token request_token --targets repositoryName=aws-tensorflow,sourceReference={tf_branch}_git_sync,destinationReference={tf_branch}'
-                  .format(tf_version=tf_version, tf_branch=tf_branch))
+                  '--client-request-token {token} --targets repositoryName=aws-tensorflow,sourceReference={tf_branch}_git_sync,destinationReference={tf_branch}'
+                  .format(tf_version=tf_version, token=timestampStr, tf_branch=tf_branch))
 
 
 if __name__ == '__main__':
