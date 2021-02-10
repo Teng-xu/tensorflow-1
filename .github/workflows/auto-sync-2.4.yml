@@ -38,7 +38,6 @@ jobs:
           git checkout --track origin/master
           echo "!contains(${{ steps.git-status.outputs.processed_status }}, 'up to date')"
       - name: Run CodeBuild
-        run: echo '------test------'
         if: "!contains('On branch r2.4%0AYour branch is up to date with 'origin/r2.4'.%0A%0Anothing to commit, working tree clean', 'up to date')"
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
