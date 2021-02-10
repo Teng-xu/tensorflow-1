@@ -1,7 +1,7 @@
 name: Merge upstream branch master
 on:
   schedule:
-    - cron:  '* 16 * * *'
+    - cron:  '* 8 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -27,14 +27,16 @@ jobs:
         id: git-status
       - name: Check Git Status
         run: | 
-          STATUS = "${{ steps.git-status.outputs.status }}"
-          STATUS="${STATUS//'%'/'%25'}"
-          STATUS="${STATUS//$'\n'/'%0A'}"
-          STATUS="${STATUS//$'\r'/'%0D'}"
-          echo "::set-output name=status::$STATUS"
-        id: status-log
+          status=`git status`
+          echo "status: ${status}"
+          readonly local commits_check=$(echo "$status" | grep -c 'ahead' )
+          if [[ "$commits_check" -eq 0 ]]; then
+            echo "Branch has no new changes."
+            exit 78
+          else
+            echo "Branch has new commits, proceeding to run CodeBuild project."
+          fi
       - name: Run CodeBuild
-        if: "!contains(${{ steps.status-log.outputs.status }}, 'up to date')"
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync
