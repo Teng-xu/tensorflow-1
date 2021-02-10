@@ -38,7 +38,7 @@ jobs:
           git checkout --track origin/master
           echo "!contains(${{ steps.git-status.outputs.processed_status }}, 'up to date')"
       - name: Run CodeBuild
-        if: !contains("Your branch is up to date ", 'up to date')
+        if: contains("Your branch is ahead ", 'ahead')
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync
