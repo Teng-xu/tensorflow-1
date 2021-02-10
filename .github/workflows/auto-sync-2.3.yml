@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.3
 on:
   schedule:
-    - cron:  '0 8 * * *'
+    - cron:  '0 16 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -25,16 +25,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
       - name: Check Git Status
-        run: echo "::set-output name=status::$(git status)"
-        id: git-status
-      - name: Check Git Status
         run: | 
           status=`git status`
           echo "status: ${status}"
           readonly local commits_check=$(echo "$status" | grep -c 'ahead' )
           if [[ "$commits_check" -eq 0 ]]; then
             echo "Branch has no new changes."
-            exit 78
+            exit 0
           else
             echo "Branch has new commits, proceeding to run CodeBuild project."
           fi

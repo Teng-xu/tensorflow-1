@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.4
 on:
   schedule:
-    - cron:  '0 8 * * *'
+    - cron:  '0 16 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
           readonly local commits_check=$(echo "$status" | grep -c 'ahead' )
           if [[ "$commits_check" -eq 0 ]]; then
             echo "Branch has no new changes."
-            exit 78
+            exit 0
           else
             echo "Branch has new commits, proceeding to run CodeBuild project."
           fi
