@@ -1,7 +1,7 @@
 name: Merge upstream branch 2.4
 on:
   schedule:
-    - cron:  '0 1 * * *'
+    - cron:  '0 3 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -30,13 +30,16 @@ jobs:
           status="${status//'%'/'%25'}"
           status="${status//$'\n'/'%0A'}"
           status="${status//$'\r'/'%0D'}"
-          echo "::set-output name=STATUS::$status"
+          echo "::set-output name=statuslog::${status}"
           echo "status: ${status}"
         id: git-status
       - name: Checkout master branch
-        run: git checkout --track origin/master
+        run: |
+          git checkout --track origin/master
+          echo "${{ steps.git-status.outputs.statuslog }}"
+          echo "!contains(${{ steps.git-status.outputs.statuslog }}, 'up to date')"
       - name: Run CodeBuild
-        if: "!contains(${{ steps.git-status.outputs.STATUS }}, 'up to date')"
+        if: "!contains(${{ steps.git-status.outputs.statuslog }}, 'up to date')"
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: Tensorflow-git-auto-sync
