@@ -16,34 +16,4 @@ jobs:
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
           git merge --no-edit upstream/master
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Check Git Status
-        run: | 
-          status=`git status`
-          echo "status: ${status}"
-          readonly local commits_check=$(echo "$status" | grep -c 'ahead' )
-          if [[ "$commits_check" -eq 0 ]]; then
-            echo "Branch has no new changes."
-            echo "::set-output name=skip::true"
-          else
-            echo "Branch has new commits, proceeding to run CodeBuild project."
-            echo "::set-output name=skip::false"
-          fi
-      - name: Run CodeBuild
-        if: steps.git-status.outputs.skip == 'false'
-        uses: aws-actions/aws-codebuild-run-build@v1.0.3
-        with:
-          project-name: Tensorflow-git-auto-sync
-          buildspec-override: aws-ci/git-sync.yml
-          env-vars-for-codebuild: |
-            TF_VERSION
-        env:
-          TF_VERSION: master
-      - name: Push to upstream
-        run: |
           git push
