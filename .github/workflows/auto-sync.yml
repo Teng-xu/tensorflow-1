@@ -1,7 +1,7 @@
 name: Sync upstream branches
 on:
   schedule:
-    - cron:  '0 20 * * *'
+    - cron:  '30 20 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -127,7 +127,7 @@ jobs:
           git push
         id: git-status-24
       - name: Checkout master branch
-        run: git checkout --track origin/master
+        run: git checkout master
       - name: Run CodeBuild 1.15
         if: steps.git-status-115.outputs.skip == 'false'
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
