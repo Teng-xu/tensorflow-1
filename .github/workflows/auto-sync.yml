@@ -1,7 +1,7 @@
 name: Sync upstream branches
 on:
   schedule:
-    - cron:  '0 19 * * *'
+    - cron:  '40 19 * * *'
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -20,7 +20,7 @@ jobs:
           git config --global user.name 'aws-tensorflow-bot'
           git config --global user.email 'aws-tensorflow-bot@amazon.com'
           git checkout r1.15
-          git pull --unshallow
+          git pull
           git remote add upstream https://github.com/tensorflow/tensorflow.git
           git fetch upstream
           git merge --no-edit upstream/r1.15
@@ -39,7 +39,7 @@ jobs:
       - name: Merge upstream 2.0
         run: |
           git checkout r2.0
-          git pull --unshallow
+          git pull
           git fetch upstream
           git merge --no-edit upstream/r2.0
           status=`git status`
@@ -57,7 +57,7 @@ jobs:
       - name: Merge upstream 2.1
         run: |
           git checkout r2.1
-          git pull --unshallow
+          git pull
           git fetch upstream
           git merge --no-edit upstream/r2.1
           status=`git status`
@@ -75,7 +75,7 @@ jobs:
       - name: Merge upstream 2.2
         run: |
           git checkout r2.2
-          git pull --unshallow
+          git pull
           git fetch upstream
           git merge --no-edit upstream/r2.2
           status=`git status`
@@ -93,7 +93,7 @@ jobs:
       - name: Merge upstream 2.3
         run: |
           git checkout r2.3
-          git pull --unshallow
+          git pull
           git fetch upstream
           git merge --no-edit upstream/r2.3
           status=`git status`
@@ -111,7 +111,7 @@ jobs:
       - name: Merge upstream 2.4
         run: |
           git checkout r2.4
-          git pull --unshallow
+          git pull
           git fetch upstream
           git merge --no-edit upstream/r2.4
           status=`git status`
